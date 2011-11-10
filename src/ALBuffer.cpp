@@ -153,11 +153,24 @@ Context& Buffer::getContext() const
   return context;
 }
 
-Ref<Buffer> Buffer::create(const ResourceInfo& info, Context& context, const BufferData& data)
+Ref<Buffer> Buffer::create(const ResourceInfo& info,
+                           Context& context,
+                           const BufferData& data)
 {
-  Ref<Buffer> buffer = new Buffer(info, context);
-  if (!buffer->init(data))
+  Ref<Buffer> buffer(new Buffer(info, context));
+
+  alGenBuffers(1, &buffer->bufferID);
+  alBufferData(buffer->bufferID,
+               convertToAL(data.format),
+               data.data, data.size,
+               data.frequency);
+
+  if (!checkAL("Error during OpenAL buffer creation"))
     return NULL;
+
+  buffer->format = data.format;
+  buffer->duration = Time(data.size) /
+                     (getFormatSize(data.format) * data.frequency);
 
   return buffer;
 }
@@ -181,24 +194,6 @@ Buffer::Buffer(const Buffer& source):
   context(source.context)
 {
   panic("OpenAL buffer objects may not be copied");
-}
-
-bool Buffer::init(const BufferData& data)
-{
-  alGenBuffers(1, &bufferID);
-  alBufferData(bufferID,
-               convertToAL(data.format),
-               data.data, data.size,
-               data.frequency);
-
-  if (!checkAL("Error during OpenAL buffer creation"))
-    return false;
-
-  format = data.format;
-
-  duration = float(data.size) / (getFormatSize(format) * data.frequency);
-
-  return true;
 }
 
 Buffer& Buffer::operator = (const Buffer& source)

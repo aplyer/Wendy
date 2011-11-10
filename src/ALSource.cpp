@@ -243,8 +243,11 @@ Context& Source::getContext() const
 
 Ref<Source> Source::create(Context& context)
 {
-  Ref<Source> source = new Source(context);
-  if (!source->init())
+  Ref<Source> source(new Source(context));
+
+  alGenSources(1, &source->sourceID);
+
+  if (!checkAL("Error during audio buffer creation"))
     return NULL;
 
   return source;
@@ -257,16 +260,6 @@ Source::Source(Context& initContext):
   gain(1.f),
   pitch(1.f)
 {
-}
-
-bool Source::init()
-{
-  alGenSources(1, &sourceID);
-
-  if (!checkAL("Error during audio buffer creation"))
-    return false;
-
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////

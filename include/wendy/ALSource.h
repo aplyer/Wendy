@@ -138,7 +138,6 @@ public:
 private:
   Source(Context& context);
   Source(const Source& source);
-  bool init();
   Source& operator = (const Source& source);
   Context& context;
   unsigned int sourceID;

@@ -130,8 +130,11 @@ unsigned int OcclusionQuery::getResult() const
 OcclusionQuery* OcclusionQuery::create(Context& context)
 {
   Ptr<OcclusionQuery> query(new OcclusionQuery(context));
-  if (!query->init())
-    return NULL;
+
+  glGenQueries(1, &query->queryID);
+
+  if (!checkGL("OpenGL error during creation of occlusion query object"))
+    return false;
 
   return query.detachObject();
 }
@@ -141,16 +144,6 @@ OcclusionQuery::OcclusionQuery(Context& initContext):
   queryID(0),
   active(false)
 {
-}
-
-bool OcclusionQuery::init()
-{
-  glGenQueries(1, &queryID);
-
-  if (!checkGL("OpenGL error during creation of occlusion query object"))
-    return false;
-
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////

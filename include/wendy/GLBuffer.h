@@ -129,7 +129,6 @@ private:
   VertexBuffer(Context& context);
   VertexBuffer(const VertexBuffer& source);
   VertexBuffer& operator = (const VertexBuffer& source);
-  bool init(const VertexFormat& format, unsigned int count, Usage usage);
   Context& context;
   bool locked;
   VertexFormat format;
@@ -226,7 +225,6 @@ private:
   IndexBuffer(Context& context);
   IndexBuffer(const IndexBuffer& source);
   IndexBuffer& operator = (const IndexBuffer& source);
-  bool init(unsigned int count, Type type, Usage usage);
   Context& context;
   bool locked;
   Type type;
@@ -502,7 +500,6 @@ public:
                                   unsigned int height);
 private:
   RenderBuffer();
-  bool init(const PixelFormat& format, unsigned int width, unsigned int height);
   void attach(int attachment, unsigned int z);
   void detach(int attachment);
   unsigned int bufferID;

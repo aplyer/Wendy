@@ -218,8 +218,26 @@ Ref<VertexBuffer> VertexBuffer::create(Context& context,
 				       Usage usage)
 {
   Ref<VertexBuffer> buffer(new VertexBuffer(context));
-  if (!buffer->init(format, count, usage))
+
+  buffer->format = format;
+  buffer->usage = usage;
+  buffer->count = count;
+
+  glGenBuffers(1, &buffer->bufferID);
+
+  context.setCurrentVertexBuffer(buffer);
+
+  glBufferData(GL_ARRAY_BUFFER,
+	       count * format.getSize(),
+	       NULL,
+	       convertToGL(usage));
+
+  if (!checkGL("Error during creation of vertex buffer of format \'%s\'",
+               format.asString().c_str()))
+  {
+    context.setCurrentVertexBuffer(NULL);
     return NULL;
+  }
 
   return buffer;
 }
@@ -237,33 +255,6 @@ VertexBuffer::VertexBuffer(const VertexBuffer& source):
   context(source.context)
 {
   panic("Vertex buffers may not be copied");
-}
-
-bool VertexBuffer::init(const VertexFormat& initFormat,
-			unsigned int initCount,
-			Usage initUsage)
-{
-  format = initFormat;
-  usage = initUsage;
-  count = initCount;
-
-  glGenBuffers(1, &bufferID);
-
-  context.setCurrentVertexBuffer(this);
-
-  glBufferData(GL_ARRAY_BUFFER,
-	       count * format.getSize(),
-	       NULL,
-	       convertToGL(usage));
-
-  if (!checkGL("Error during creation of vertex buffer of format \'%s\'",
-               format.asString().c_str()))
-  {
-    context.setCurrentVertexBuffer(NULL);
-    return false;
-  }
-
-  return true;
 }
 
 VertexBuffer& VertexBuffer::operator = (const VertexBuffer& source)
@@ -388,8 +379,26 @@ Ref<IndexBuffer> IndexBuffer::create(Context& context,
 				     Usage usage)
 {
   Ref<IndexBuffer> buffer(new IndexBuffer(context));
-  if (!buffer->init(count, type, usage))
+
+  buffer->type = type;
+  buffer->usage = usage;
+  buffer->count = count;
+
+  glGenBuffers(1, &buffer->bufferID);
+
+  context.setCurrentIndexBuffer(buffer);
+
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+	       count * getTypeSize(type),
+	       NULL,
+	       convertToGL(usage));
+
+  if (!checkGL("Error during creation of index buffer of element size %u",
+               getTypeSize(type)))
+  {
+    context.setCurrentIndexBuffer(NULL);
     return NULL;
+  }
 
   return buffer;
 }
@@ -424,31 +433,6 @@ IndexBuffer::IndexBuffer(const IndexBuffer& source):
   context(source.context)
 {
   panic("Index buffers may not be copied");
-}
-
-bool IndexBuffer::init(unsigned int initCount, Type initType, Usage initUsage)
-{
-  type = initType;
-  usage = initUsage;
-  count = initCount;
-
-  glGenBuffers(1, &bufferID);
-
-  context.setCurrentIndexBuffer(this);
-
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-	       count * getTypeSize(type),
-	       NULL,
-	       convertToGL(usage));
-
-  if (!checkGL("Error during creation of index buffer of element size %u",
-               getTypeSize(type)))
-  {
-    context.setCurrentIndexBuffer(NULL);
-    return false;
-  }
-
-  return true;
 }
 
 IndexBuffer& IndexBuffer::operator = (const IndexBuffer& source)
@@ -826,27 +810,13 @@ Ref<RenderBuffer> RenderBuffer::create(const PixelFormat& format,
                                        unsigned int height)
 {
   Ref<RenderBuffer> buffer(new RenderBuffer());
-  if (!buffer->init(format, width, height))
-    return NULL;
 
-  return buffer;
-}
+  buffer->format = format;
+  buffer->width = width;
+  buffer->height = height;
 
-RenderBuffer::RenderBuffer():
-  bufferID(0)
-{
-}
-
-bool RenderBuffer::init(const PixelFormat& initFormat,
-                        unsigned int initWidth,
-                        unsigned int initHeight)
-{
-  format = initFormat;
-  width = initWidth;
-  height = initHeight;
-
-  glGenRenderbuffersEXT(1, &bufferID);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bufferID);
+  glGenRenderbuffersEXT(1, &buffer->bufferID);
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, buffer->bufferID);
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
                            convertToGL(format.getSemantic()),
                            width,
@@ -855,10 +825,15 @@ bool RenderBuffer::init(const PixelFormat& initFormat,
   if (!checkGL("Error during creation of render buffer of format \'%s\'",
                format.asString().c_str()))
   {
-    return false;
+    return NULL;
   }
 
-  return true;
+  return buffer;
+}
+
+RenderBuffer::RenderBuffer():
+  bufferID(0)
+{
 }
 
 void RenderBuffer::attach(int attachment, unsigned int z)

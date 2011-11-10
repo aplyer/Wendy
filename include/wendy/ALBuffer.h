@@ -105,7 +105,6 @@ public:
 private:
   Buffer(const ResourceInfo& info, Context& context);
   Buffer(const Buffer& source);
-  bool init(const BufferData& data);
   Buffer& operator = (const Buffer& source);
   Context& context;
   unsigned int bufferID;

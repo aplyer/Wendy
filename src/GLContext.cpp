@@ -721,8 +721,13 @@ bool ImageFramebuffer::setBuffer(Attachment attachment, Image* newImage, unsigne
 ImageFramebuffer* ImageFramebuffer::create(Context& context)
 {
   Ptr<ImageFramebuffer> framebuffer(new ImageFramebuffer(context));
-  if (!framebuffer->init())
+
+  glGenFramebuffersEXT(1, &framebuffer->bufferID);
+
+#if WENDY_DEBUG
+  if (!checkGL("Error during image framebuffer creation"))
     return NULL;
+#endif
 
   return framebuffer.detachObject();
 }
@@ -731,18 +736,6 @@ ImageFramebuffer::ImageFramebuffer(Context& context):
   Framebuffer(context),
   bufferID(0)
 {
-}
-
-bool ImageFramebuffer::init()
-{
-  glGenFramebuffersEXT(1, &bufferID);
-
-#if WENDY_DEBUG
-  if (!checkGL("Error during image framebuffer creation"))
-    return false;
-#endif
-
-  return true;
 }
 
 void ImageFramebuffer::apply() const

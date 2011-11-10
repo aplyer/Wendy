@@ -73,7 +73,6 @@ public:
   static OcclusionQuery* create(Context& context);
 private:
   OcclusionQuery(Context& context);
-  bool init();
   Context& context;
   unsigned int queryID;
   bool active;

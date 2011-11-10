@@ -408,7 +408,6 @@ public:
   static ImageFramebuffer* create(Context& context);
 private:
   ImageFramebuffer(Context& context);
-  bool init();
   void apply() const;
   unsigned int bufferID;
   ImageRef images[5];
